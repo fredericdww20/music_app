@@ -13,12 +13,17 @@ class FullPlayerPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        // fleche retour arrire en blanc
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         elevation: 0,
         actions: [
           if (player.isCasting)
             IconButton(
-              icon: const Icon(Icons.close, color: Colors.redAccent),
+              icon: const Icon(Icons.cast, color: Colors.white),
               onPressed: () async {
                 await player.disableCasting();
                 ScaffoldMessenger.of(
@@ -181,7 +186,12 @@ class FullPlayerPage extends StatelessWidget {
                                     Text(
                                       _formatDuration(position),
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: Color.fromARGB(
+                                          255,
+                                          161,
+                                          159,
+                                          159,
+                                        ),
                                       ),
                                     ),
                                     Text(

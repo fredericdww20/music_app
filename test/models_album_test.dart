@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_app/models.dart'; // adapte si ton package name est différent
+import 'package:music_app/models.dart';
 
 void main() {
   test('Album.fromJson parse basique', () {
@@ -9,8 +9,13 @@ void main() {
       'artist': 'Band',
       'cover': 'https://exemple/cover.jpg',
       'tracks': [
-        {'id': 't1', 'title': 'Song', 'url': 'https://exemple/song.mp3', 'duration': 123}
-      ]
+        {
+          'id': 't1',
+          'title': 'Song',
+          'url': 'https://exemple/song.mp3',
+          'duration': 123,
+        },
+      ],
     };
     final album = Album.fromJson(json);
     expect(album.id, 'a1');

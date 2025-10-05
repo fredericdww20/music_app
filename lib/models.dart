@@ -15,6 +15,26 @@ class Track {
     this.bitrate,
   });
 
+  String get artist {
+    try {
+      final uri = Uri.parse(url);
+      final segs = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+
+      // ['Artiste','Album','Fichier'] → nouvelle arbo
+      if (segs.length >= 3) {
+        return Uri.decodeComponent(segs[0]);
+      }
+
+      // ['Album','Fichier'] → ancienne arbo → on affiche le nom d’album
+      if (segs.length >= 2) {
+        return albumName;
+      }
+    } catch (_) {
+      // Si parsing échoue, on retombe sur l’album
+    }
+    return albumName;
+  }
+
   factory Track.fromJson(
     Map<String, dynamic> json,
     String albumName,

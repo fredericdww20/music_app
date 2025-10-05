@@ -4,6 +4,7 @@ import '../api_service.dart';
 import '../models.dart';
 import '../player_service.dart';
 import 'track_list_page.dart';
+import '../pages/artists_page.dart';
 
 class AlbumListPage extends StatefulWidget {
   const AlbumListPage({super.key});
@@ -94,9 +95,13 @@ class _AlbumListPageState extends State<AlbumListPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         onTap: (index) {
-          setState(() {
-            // TODO: changer l'index de la page
-          });
+          if (index == 1) {
+            // 🔹 Ouvre la page Artistes
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ArtistsPage()),
+            );
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.album), label: "Albums"),
@@ -106,5 +111,3 @@ class _AlbumListPageState extends State<AlbumListPage> {
     );
   }
 }
-
-// -------- PAGE LISTE TITRES --------

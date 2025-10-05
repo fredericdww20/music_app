@@ -3,6 +3,7 @@ import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
 import '../player_service.dart';
 import '../pages/full_player_page.dart';
+import '../utils/snackbar.dart';
 
 class MiniPlayer extends StatelessWidget {
   const MiniPlayer({super.key});
@@ -26,6 +27,9 @@ class MiniPlayer extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => FullPlayerPage(), // pas 'const'
                 ),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Je joue en ce moment")),
               );
             },
             child: ListTile(
@@ -58,5 +62,3 @@ class MiniPlayer extends StatelessWidget {
     );
   }
 }
-
-// -------- LECTEUR PLEIN ECRAN --------

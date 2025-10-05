@@ -27,6 +27,9 @@ class PlayerService extends ChangeNotifier {
   final _castDurController = StreamController<Duration?>.broadcast();
   Timer? _castPollTimer;
 
+  // 🔹 Nouveau flag : savoir si l’utilisateur a mis pause volontairement
+  bool _userPaused = false;
+
   Track? get currentTrack => _currentTrack;
   bool get isPlaying => _isPlaying;
   bool get isCasting => _isCasting;
@@ -48,11 +51,58 @@ class PlayerService extends ChangeNotifier {
       }
     });
 
-    _player.processingStateStream.listen((state) {
-      if (!_isCasting && state == ProcessingState.completed) {
+    _player.processingStateStream.listen((state) async {
+      if (_isCasting) return;
+      if (state == ProcessingState.completed) {
         next();
       }
     });
+
+    // ✅ Correctifs anti-arrêt intempestif
+
+    // A) Auto-reprise si la lecture s’arrête toute seule avant la fin
+    _player.playerStateStream.listen((s) async {
+      if (_isCasting) return;
+
+      if (s.processingState == ProcessingState.ready && !s.playing) {
+        // Si l'utilisateur n'a pas mis pause et que la piste n'est pas terminée
+        final dur = _player.duration;
+        final pos = _player.position;
+        if (!_userPaused &&
+            dur != null &&
+            pos < dur - const Duration(seconds: 2)) {
+          try {
+            await _player.play();
+            _isPlaying = true;
+            notifyListeners();
+          } catch (_) {
+            // si erreur, le listener B gérera
+          }
+        }
+      }
+    });
+
+    // B) Auto-recovery en cas d'erreur (réseau, micro-coupure)
+    _player.playbackEventStream.listen(
+      (_) {},
+      onError: (Object e, StackTrace st) async {
+        if (_isCasting) return;
+        final t = _currentTrack;
+        if (t == null) return;
+        final pos = _player.position;
+        try {
+          await _player.setUrl(t.url);
+          await _player.seek(pos);
+          if (!_userPaused) {
+            await _player.play();
+            _isPlaying = true;
+            notifyListeners();
+          }
+        } catch (_) {
+          // si la ressource est vraiment indisponible, on reste en pause
+        }
+      },
+    );
 
     // init volume controller
     _volumeController = VolumeController();
@@ -111,6 +161,7 @@ class PlayerService extends ChangeNotifier {
     _playlist = tracks;
     _currentIndex = index;
     _currentTrack = _playlist[_currentIndex];
+    _userPaused = false; // 🔹 reset
 
     if (_isCasting && _cast.isReady) {
       await _cast.playUrl(_currentTrack!.url, startPosition: Duration.zero);
@@ -131,9 +182,11 @@ class PlayerService extends ChangeNotifier {
       if (_isPlaying) {
         await _cast.pause();
         _isPlaying = false;
+        _userPaused = true; // 🔹 ajouté
       } else {
         await _cast.play();
         _isPlaying = true;
+        _userPaused = false; // 🔹 ajouté
       }
       notifyListeners();
       return;
@@ -142,9 +195,11 @@ class PlayerService extends ChangeNotifier {
     if (_player.playing) {
       await _player.pause();
       _isPlaying = false;
+      _userPaused = true; // 🔹 ajouté
     } else {
       await _player.play();
       _isPlaying = true;
+      _userPaused = false; // 🔹 ajouté
     }
     notifyListeners();
   }
@@ -163,7 +218,6 @@ class PlayerService extends ChangeNotifier {
     }
   }
 
-  //
   Future<void> seek(Duration position) async {
     if (_isCasting) {
       await _cast.seek(position);

@@ -21,7 +21,10 @@ class TrackListPage extends StatelessWidget {
         actions: [
           if (player.isCasting)
             IconButton(
-              icon: const Icon(Icons.close, color: Colors.redAccent),
+              icon: const Icon(
+                Icons.close,
+                color: Color.fromARGB(255, 0, 0, 0),
+              ),
               onPressed: () async {
                 await player.disableCasting();
                 ScaffoldMessenger.of(
@@ -30,7 +33,7 @@ class TrackListPage extends StatelessWidget {
               },
             ),
           IconButton(
-            icon: const Icon(Icons.cast, color: Colors.white),
+            icon: const Icon(Icons.cast, color: Color.fromARGB(255, 0, 0, 0)),
             onPressed: () async {
               final devices = await player.discoverDevices();
               if (devices.isEmpty) {
